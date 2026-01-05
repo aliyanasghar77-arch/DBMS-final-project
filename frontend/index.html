@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Lab App - Frontend</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; }
+    form { margin-bottom: 20px; border: 1px solid #ddd; padding: 12px; border-radius: 6px; }
+    label { display:block; margin: 6px 0 2px; }
+    input, select { width: 100%; padding: 6px; box-sizing: border-box; }
+    button { margin-top: 8px; padding: 8px 12px; }
+    .response { margin-top:8px; font-size: 0.9rem; color: #006600; }
+  </style>
+</head>
+<body>
+  <h2>Lab App — Quick Demo</h2>
+  <p>Set <code>API_BASE</code> below to your backend (default uses http://localhost:4000)</p>
+
+  <script>
+    const API_BASE = 'http://localhost:4000/api';
+    async function post(endpoint, payload, outputEl) {
+      try {
+        const res = await fetch(API_BASE + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        outputEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        outputEl.textContent = 'Error: ' + err.message;
+      }
+    }
+  </script>
+
+  <!-- Lab form -->
+  <form id="labForm">
+    <h3>Create Lab</h3>
+    <label>labId (number)</label>
+    <input name="labId" type="number" required />
+    <label>lab_name</label>
+    <input name="lab_name" />
+    <label>location</label>
+    <input name="location" />
+    <label>capacity</label>
+    <input name="capacity" type="number" />
+    <button type="submit">Create Lab</button>
+    <pre class="response" id="labResp"></pre>
+  </form>
+
+  <!-- Staff -->
+  <form id="staffForm">
+    <h3>Create Staff</h3>
+    <label>staffId</label><input name="staffId" type="number" required/>
+    <label>staff_name</label><input name="staff_name"/>
+    <label>role</label><input name="role"/>
+    <label>labId</label><input name="labId" type="number" required/>
+    <button type="submit">Create Staff</button>
+    <pre class="response" id="staffResp"></pre>
+  </form>
+
+  <!-- Equipment -->
+  <form id="equipForm">
+    <h3>Create Equipment</h3>
+    <label>equipmentId</label><input name="equipmentId" type="number" required/>
+    <label>equipment_name</label><input name="equipment_name"/>
+    <label>quantity</label><input name="quantity" type="number"/>
+    <label>labId</label><input name="labId" type="number" required/>
+    <button type="submit">Create Equipment</button>
+    <pre class="response" id="equipResp"></pre>
+  </form>
+
+  <!-- Experiment -->
+  <form id="expForm">
+    <h3>Create Experiment</h3>
+    <label>experimentId</label><input name="experimentId" type="number" required/>
+    <label>experiment_name</label><input name="experiment_name"/>
+    <label>experiment_date</label><input name="experiment_date" type="date/>
+    <label>labId</label><input name="labId" type="number" required/>
+    <label>doctorId</label><input name="doctorId" type="number"/>
+    <button type="submit">Create Experiment</button>
+    <pre class="response" id="expResp"></pre>
+  </form>
+
+  <!-- Doctor -->
+  <form id="docForm">
+    <h3>Create Doctor</h3>
+    <label>doctorId</label><input name="doctorId" type="number" required/>
+    <label>doctor_name</label><input name="doctor_name"/>
+    <label>specialization</label><input name="specialization"/>
+    <button type="submit">Create Doctor</button>
+    <pre class="response" id="docResp"></pre>
+  </form>
+
+  <!-- Patient -->
+  <form id="patForm">
+    <h3>Create Patient</h3>
+    <label>patientId</label><input name="patientId" type="number" required/>
+    <label>patient_name</label><input name="patient_name"/>
+    <label>doctorId</label><input name="doctorId" type="number"/>
+    <button type="submit">Create Patient</button>
+    <pre class="response" id="patResp"></pre>
+  </form>
+
+  <script>
+    function bind(formId, endpoint, respId) {
+      const form = document.getElementById(formId);
+      const out = document.getElementById(respId);
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const data = {};
+        new FormData(form).forEach((v,k)=> {
+          // convert numbers
+          if (/Id$|^capacity$|^quantity$|^labId$|^staffId$|^equipmentId$|^doctorId$|^patientId$|^experimentId$/.test(k)) {
+            if (v !== '') data[k] = Number(v);
+            else delete data[k];
+          } else if (k === 'experiment_date') {
+            data[k] = v ? new Date(v).toISOString() : undefined;
+          } else {
+            data[k] = v;
+          }
+        });
+        post('/' + endpoint, data, out);
+      });
+    }
+
+    bind('labForm', 'lab', 'labResp');
+    bind('staffForm', 'staff', 'staffResp');
+    bind('equipForm', 'equipment', 'equipResp');
+    bind('expForm', 'experiment', 'expResp');
+    bind('docForm', 'doctor', 'docResp');
+    bind('patForm', 'patient', 'patResp');
+  </script>
+</body>
+</html>
